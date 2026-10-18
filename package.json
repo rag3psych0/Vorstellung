@@ -1,0 +1,13 @@
+{
+  "name": "plaettchenmodell",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Interaktive, webbasierte Lernumgebung zum Plättchenmodell (Addition, Subtraktion, Multiplikation, Division, lineare und quadratische Terme, quadratische Ergänzung) – Masterarbeit (Lehramt Mathematik/Physik).",
+  "scripts": {
+    "start": "bash scripts/dev-server.sh",
+    "test": "bash scripts/run-tests.sh"
+  },
+  "devDependencies": {
+    "playwright": "^1.48.0"
+  }
+}

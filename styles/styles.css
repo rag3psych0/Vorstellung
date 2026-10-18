@@ -1,0 +1,1503 @@
+  /* Runde 24 (Punkt 1, Nutzer-Rückmeldung: "Schau dir das Layout der Seite
+     hier an und verwende es" – gemeint ist der schlichtere, für
+     Realschüler:innen zugänglichere Header-/Nav-Stil des alten,
+     wiedergefundenen Projektstands in F:\Code\3): die Farbpalette wechselt
+     von der vorherigen "Papier"-Optik (dunkles Marine-Ink, roter
+     Randstrich, Serifen-Überschriften) zu EINER einzigen, freundlichen
+     Akzentfarbe (helles Blau, wie zuvor in F:\Code\3/styles/main.css) vor
+     cremefarbenem Hintergrund, durchgängig in einer einzigen serifenlosen
+     Schrift (keine separate Serifen-Schrift für Überschriften mehr). Die
+     Variablennamen selbst bleiben unverändert (hunderte Fundstellen im
+     restlichen CSS), nur ihre WERTE wechseln – --ink entspricht jetzt
+     bewusst --accent (EINE Akzentfarbe statt zwei verschiedener Blautöne). */
+  :root{
+    --bg:#F7F5F0;
+    --tafel-grid:rgba(58,110,165,0.18);
+    --margin-line:#C6414B;
+    --surface:#FFFFFF;
+    --surface-alt:#EFECE3;
+    --ink:#3A6EA5;
+    --ink-soft:#5A8AC0;
+    --text:#1a1a1a;
+    --text-muted:#5b6570;
+    --border:#d8d3c7;
+    --accent:#3A6EA5;
+    --accent-contrast:#FFFFFF;
+    --accent-hover:#2d5680;
+    --focus:#a8c5e0;
+    color-scheme:light;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --bg:#14181b;
+      --tafel-grid:rgba(255,255,255,0.14);
+      --margin-line:#e08a93;
+      --surface:#1b2126;
+      --surface-alt:#20272c;
+      --ink:#6ea6dd;
+      --ink-soft:#8fbae6;
+      --text:#e7e9ea;
+      --text-muted:#9aa3ab;
+      --border:#333c42;
+      --accent:#6ea6dd;
+      --accent-contrast:#10181f;
+      --accent-hover:#8fbae6;
+      --focus:#6f9bd1;
+      color-scheme:dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#14181b;
+    --tafel-grid:rgba(255,255,255,0.14);
+    --margin-line:#e08a93;
+    --surface:#1b2126;
+    --surface-alt:#20272c;
+    --ink:#6ea6dd;
+    --ink-soft:#8fbae6;
+    --text:#e7e9ea;
+    --text-muted:#9aa3ab;
+    --border:#333c42;
+    --accent:#6ea6dd;
+    --accent-contrast:#10181f;
+    --accent-hover:#8fbae6;
+    --focus:#6f9bd1;
+    color-scheme:dark;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:"Public Sans", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size:16px;
+    line-height:1.55;
+  }
+  h1,h2,h3{
+    font-family:inherit;
+    color:var(--ink);
+    text-wrap:balance;
+    margin:0;
+  }
+  /* Runde 24 (Punkt 1): schlichte, plane Seitenstruktur statt Karte mit
+     Schatten/Randstrich – weißer Kopf- und Nav-Balken (jeweils mit dünner
+     Trennlinie), Inhalt zentriert auf einer einfarbigen Hintergrundfläche,
+     ganz wie im alten Projektstand (F:\Code\3/styles/main.css). Die
+     Klassennamen .seite/.blatt bleiben erhalten (keine HTML-Änderung
+     nötig), tragen aber keine Karten-Optik mehr. */
+  .seite{
+    max-width:1040px;
+    margin:0 auto;
+  }
+  .blatt{
+    background:transparent;
+    padding:0;
+  }
+
+  header.kopf{
+    padding:1.5rem clamp(1.25rem, 4vw, 3rem) 1.1rem;
+    background:var(--surface);
+    border-bottom:3px solid var(--accent);
+  }
+  header.kopf h1{
+    font-size:clamp(1.7rem, 3vw, 2.2rem);
+    font-weight:700;
+  }
+
+  nav.modul-nav{
+    display:flex;
+    flex-wrap:wrap;
+    gap:0.5rem;
+    margin:0;
+    padding:1rem clamp(1.25rem, 4vw, 3rem);
+    background:var(--surface);
+    border-bottom:1px solid var(--border);
+  }
+  .modul-chip{
+    font-family:inherit;
+    font-size:0.9rem;
+    font-weight:600;
+    padding:0.5rem 1rem;
+    border-radius:999px;
+    border:1.5px solid var(--border);
+    background:var(--surface);
+    color:var(--text-muted);
+    cursor:pointer;
+  }
+  .modul-chip:hover{ border-color:var(--accent); }
+  .modul-chip[data-aktiv="true"]{
+    border-color:var(--accent);
+    background:var(--accent);
+    color:var(--accent-contrast);
+  }
+
+  h2.modul-titel{
+    font-size:1.5rem;
+    font-weight:600;
+    margin-bottom:0.75rem;
+  }
+  .modul-intro{
+    color:var(--text-muted);
+    max-width:62ch;
+    margin:0 0 1.25rem;
+  }
+  .modul-intro strong{color:var(--text);}
+
+  /* --- Tab-Ebenen: oberste Reiter (.modul-chip, siehe oben) → Bereichs-
+     Unterpunkte (.bereich-tabs) → ggf. eine dritte Ebene (.ansicht-tabs,
+     "Terme"/"Gleichungen" innerhalb eines Terme-Unterpunkts). Beide
+     unteren Ebenen teilen sich denselben Button-Stil (.ansicht-tab). --- */
+  .bereich-tabs, .ansicht-tabs{
+    display:flex;
+    flex-wrap:wrap;
+    gap:0.3rem;
+    margin:0 0 1.5rem;
+    border-bottom:1px solid var(--border);
+  }
+  .bereich-tabs{ border-bottom:2px solid var(--border); }
+  .ansicht-tab{
+    font-family:"Public Sans", sans-serif;
+    font-size:0.92rem;
+    font-weight:600;
+    padding:0.55rem 1rem;
+    border:none;
+    background:none;
+    color:var(--text-muted);
+    cursor:pointer;
+    border-bottom:2.5px solid transparent;
+    margin-bottom:-1px;
+  }
+  .ansicht-tab--aktiv{
+    color:var(--ink);
+    border-bottom-color:var(--accent);
+  }
+  .ansicht-tab:disabled{
+    opacity:0.45;
+    cursor:not-allowed;
+  }
+
+  form.rechnung-form{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:flex-end;
+    gap:1.25rem;
+    padding:1.1rem 1.25rem;
+    margin-bottom:1.5rem;
+    background:var(--surface-alt);
+    border:1px solid var(--border);
+    border-radius:8px;
+  }
+  .feld{
+    display:flex;
+    flex-direction:column;
+    gap:0.3rem;
+  }
+  .feld label{
+    font-size:0.72rem;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--text-muted);
+    font-weight:600;
+  }
+  .feld input, .feld select{
+    font-family:"IBM Plex Mono", monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:1.15rem;
+    width:4.6rem;
+    padding:0.3rem 0.1rem;
+    border:none;
+    border-bottom:2px solid var(--border);
+    background:transparent;
+    color:var(--text);
+  }
+  .feld select{width:3.6rem; cursor:pointer;}
+  .feld input:focus, .feld select:focus{
+    outline:none;
+    border-bottom-color:var(--focus);
+  }
+  .rechnung-form button{
+    font-family:"Public Sans", sans-serif;
+    font-weight:700;
+    font-size:0.95rem;
+    padding:0.65rem 1.4rem;
+    border:none;
+    border-radius:6px;
+    background:var(--accent);
+    color:var(--accent-contrast);
+    cursor:pointer;
+  }
+  .rechnung-form button:hover{background:var(--accent-hover);}
+  .rechnung-form button:focus-visible{outline:2px solid var(--focus); outline-offset:2px;}
+
+  .weiter-btn{
+    margin-top:0.9rem;
+    font-family:"Public Sans", sans-serif;
+    font-weight:700;
+    font-size:0.92rem;
+    padding:0.55rem 1.2rem;
+    border:none;
+    border-radius:6px;
+    background:var(--accent);
+    color:var(--accent-contrast);
+    cursor:pointer;
+  }
+  .weiter-btn:hover{background:var(--accent-hover);}
+  .weiter-btn:disabled{background:var(--border); color:var(--text-muted); cursor:default;}
+  .weiter-btn:focus-visible{outline:2px solid var(--focus); outline-offset:2px;}
+
+  /* Runde 23 (Nutzer-Rückmeldung): "Zurück" steht unterhalb von "Nächster
+     Schritt" in jeder Schritt-für-Schritt-Erklärung – bewusst zurückhaltender
+     gestaltet (Umriss statt Flächenfarbe) als "Nächster Schritt", da es ein
+     Hilfswerkzeug zum Nochmal-Ansehen ist, kein gleichrangiger Hauptknopf. */
+  .zurueck-btn{
+    display:block;
+    margin-top:0.5rem;
+    font-family:"Public Sans", sans-serif;
+    font-weight:600;
+    font-size:0.85rem;
+    padding:0.45rem 1rem;
+    border:1px solid var(--border);
+    border-radius:6px;
+    background:var(--surface);
+    color:var(--text);
+    cursor:pointer;
+  }
+  .zurueck-btn:hover:not(:disabled){ background:var(--surface-alt); }
+  .zurueck-btn:disabled{ opacity:0.45; cursor:default; }
+  .zurueck-btn:focus-visible{ outline:2px solid var(--focus); outline-offset:2px; }
+
+  .arbeitsflaeche{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:1.5rem;
+  }
+  @media (min-width:840px){
+    .arbeitsflaeche{grid-template-columns:3fr 2fr; align-items:start;}
+  }
+
+  .tafel-wrapper h3, .protokoll-wrapper h3, .palette-spalte h3, .tafel-spalte h3,
+  .tafel-wrapper h4, .protokoll-wrapper h4{
+    font-size:0.78rem;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--text-muted);
+    font-family:"Public Sans", sans-serif;
+    font-weight:700;
+    margin:0 0 0.6rem;
+  }
+
+  .plaettchen-tafel{
+    min-height:150px;
+    display:flex;
+    flex-wrap:wrap;
+    align-content:flex-start;
+    gap:0.85rem;
+    padding:1.25rem;
+    background:var(--surface-alt);
+    border:1.5px dashed var(--border);
+    border-radius:10px;
+  }
+  .tafel-leer{
+    margin:auto;
+    color:var(--text-muted);
+    font-style:italic;
+    font-size:0.95rem;
+  }
+
+  /* Gruppierte Tafel (Multiplikation & Division): jede Gruppe als eigene
+     Reihe untereinander, statt alle Plättchen in einem Fluss ("hintereinander"). */
+  .plaettchen-tafel--gruppiert{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:0.6rem;
+  }
+  .plaettchen-gruppe{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:0.5rem;
+    width:100%;
+    padding:0.4rem 0.2rem;
+    border-bottom:1.5px dashed var(--border);
+  }
+  .plaettchen-gruppe:last-child{border-bottom:none;}
+
+  /* Zwei eigenständige Beispiele (Multiplikation / Division) untereinander. */
+  .rechen-beispiel{margin-bottom:2.75rem;}
+  .rechen-beispiel:last-child{margin-bottom:0;}
+  .rechen-beispiel__titel{
+    font-family:"Public Sans", sans-serif;
+    font-size:1.1rem;
+    font-weight:700;
+    margin:0 0 0.6rem;
+    padding-bottom:0.5rem;
+    border-bottom:2px solid var(--accent);
+    color:var(--text);
+  }
+
+  /* Festes Rechenzeichen zwischen a und b (ersetzt das Dropdown, wenn eine
+     Operation pro Beispiel fest vorgegeben ist). */
+  .rechnung-operator{
+    align-self:flex-end;
+    padding:0.35rem 0.15rem;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:1.35rem;
+    font-weight:700;
+    color:var(--text-muted);
+  }
+
+  .plaettchen{animation:einfuegen 0.28s ease-out;}
+  .plaettchen.wird-neutralisiert{animation:pulsieren 0.6s ease-in-out infinite;}
+  @keyframes einfuegen{from{transform:scale(0.4); opacity:0;} to{transform:scale(1); opacity:1;}}
+  @keyframes pulsieren{0%,100%{filter:brightness(1);} 50%{filter:brightness(1.45);}}
+  @media (prefers-reduced-motion:reduce){
+    .plaettchen{animation:none;}
+    .plaettchen.wird-neutralisiert{animation:none; outline:2px solid var(--margin-line);}
+  }
+
+  ol.schritte-log{
+    list-style:none;
+    counter-reset:schritt;
+    margin:0;
+    padding:0;
+    display:flex;
+    flex-direction:column;
+    gap:0.55rem;
+  }
+  ol.schritte-log li{
+    counter-increment:schritt;
+    display:flex;
+    gap:0.65rem;
+    font-size:0.92rem;
+    padding:0.5rem 0.65rem;
+    border-radius:6px;
+  }
+  ol.schritte-log li::before{
+    content:counter(schritt);
+    font-family:"IBM Plex Mono", monospace;
+    font-size:0.72rem;
+    font-weight:600;
+    color:var(--text-muted);
+    background:var(--surface-alt);
+    border:1px solid var(--border);
+    border-radius:50%;
+    width:1.35rem;
+    height:1.35rem;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+    margin-top:0.05rem;
+  }
+  .schritte-log__ergebnis{
+    font-weight:700;
+    color:var(--ink);
+    border:1.5px solid var(--ink-soft);
+    background:var(--surface-alt);
+  }
+  .schritte-log__ergebnis::before{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:var(--accent-contrast);
+  }
+
+  /* --- Bearbeitung: Auswahl + freie Fläche ---
+     Runde 20 (Punkt 4): größerer Abstand zwischen Auswahl und
+     Bearbeitungsfläche (1.25rem -> 2.5rem) sowie eine etwas kleinere
+     Bearbeitungsfläche (max-width auf .tafel-spalte). */
+  .bearbeiten-layout{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:2.5rem;
+  }
+  @media (min-width:640px){
+    /* Runde 22 Punkt 12: breiter als zuvor (150px), damit das seither
+       verkleinerte Malkreuz (siehe .malkreuz-host--schmale-spalte unten)
+       unterhalb von "Malkreuz anzeigen" in dieser Spalte Platz hat, statt in
+       der Tafel-Spalte zu erscheinen. Die Bearbeitungsfläche rückt dadurch
+       entsprechend weiter nach rechts. */
+    .bearbeiten-layout{grid-template-columns:230px 1fr; align-items:start;}
+  }
+  .tafel-spalte{ max-width:640px; }
+  .palette{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:0.45rem;
+    margin-bottom:0.85rem;
+  }
+  @media (min-width:640px){ .palette{grid-template-columns:repeat(2,1fr);} }
+  .palette__item{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:0.35rem;
+    border:1.5px solid var(--border);
+    border-radius:8px;
+    background:var(--surface);
+    cursor:grab;
+    touch-action:none;
+  }
+  .palette__item--aktiv{ border-color:var(--accent); box-shadow:0 0 0 2px var(--focus); }
+
+  .hinzufuegen-btn, .nullpaar-btn, .leeren-btn, .rueckgaengig-btn{
+    display:block;
+    width:100%;
+    padding:0.5rem 0.6rem;
+    margin-bottom:0.5rem;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background:var(--surface);
+    font-family:"Public Sans", sans-serif;
+    font-weight:600;
+    font-size:0.85rem;
+    cursor:pointer;
+    color:var(--text);
+  }
+  .hinzufuegen-btn{ border-color:var(--accent); background:var(--accent); color:var(--accent-contrast); }
+  .hinzufuegen-btn:hover{ background:var(--accent-hover); }
+  .nullpaar-btn{ border-color:var(--accent); color:var(--ink); }
+  .nullpaar-btn:hover, .leeren-btn:hover, .rueckgaengig-btn:hover:not(:disabled){ background:var(--surface-alt); }
+  .rueckgaengig-btn:disabled{ opacity:0.45; cursor:default; }
+  /* Runde 18 (Nutzer-Rückmeldung Punkt 4): deutlich kleiner als "+ Neue Zeile
+     darunter" – "Rückgängig" ist ein Hilfswerkzeug, kein gleichrangiger
+     Haupt-Knopf. Überschreibt gezielt nur padding/font-size aus der obigen
+     Sammelregel (gleiche Spezifität, spätere Regel gewinnt). */
+  .rueckgaengig-btn{ padding:0.3rem 0.6rem; font-size:0.78rem; }
+
+  /* Runde 24 (Punkt 13): Schieberegler + "x-Wert einsetzen" direkt unterhalb
+     von "Fläche leeren" – bei Termen UND Gleichungen. */
+  .x-wert-einsetzen{
+    margin-top:0.25rem;
+    padding-top:0.6rem;
+    border-top:1px dashed var(--border);
+    display:flex;
+    flex-direction:column;
+    gap:0.35rem;
+  }
+  .x-wert-einsetzen label{ font-size:0.85rem; font-weight:600; }
+  .x-wert-anzeige{ font-variant-numeric:tabular-nums; }
+  .x-wert-slider{ width:100%; }
+  .x-wert-anwenden-btn{
+    display:block;
+    width:100%;
+    padding:0.45rem 0.6rem;
+    border:1px solid var(--accent);
+    border-radius:8px;
+    background:var(--surface);
+    font-family:"Public Sans", sans-serif;
+    font-weight:600;
+    font-size:0.82rem;
+    cursor:pointer;
+    color:var(--ink);
+  }
+  .x-wert-anwenden-btn:hover{ background:var(--surface-alt); }
+
+  /* Runde 24 (Punkt 2): Rest-Anzeige unter dem Malkreuz der Quadratischen
+     Ergänzung – eine kleine Reihe echter Zahl-Plättchen statt nur Text. */
+  .qe-rest-anzeige{
+    margin-top:0.6rem;
+    padding:0.6rem 0.75rem;
+    border:1px dashed var(--border);
+    border-radius:8px;
+    background:var(--surface-alt);
+  }
+  .qe-rest-anzeige__hinweis{ margin:0 0 0.4rem; font-size:0.85rem; font-weight:600; }
+  .qe-rest-anzeige__kacheln{ display:flex; flex-wrap:wrap; gap:0.25rem; }
+
+  /* --- Runde 17: Kopfzeile einer freien Fläche – Überschrift + Rückgängig
+     rechts daneben (Nutzer-Rückmeldung Punkt 3). --- */
+  .freie-flaeche__kopf{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:0.75rem;
+    flex-wrap:wrap;
+  }
+  .freie-flaeche__kopf h3{ margin:0 0 0.6rem; }
+  /* Runde 24 (Punkt 12): Zoom-Button-Paar neben der Überschrift, wirkt auf
+     die Kästchen- und damit Plättchengröße der ganzen (gespiegelten)
+     Flächen-Gruppe. */
+  .freie-flaeche__zoom{ display:flex; gap:0.3rem; align-self:center; }
+  .zoom-btn{
+    width:1.9rem; height:1.9rem;
+    display:flex; align-items:center; justify-content:center;
+    border:1px solid var(--border);
+    border-radius:6px;
+    background:var(--surface);
+    font-family:"IBM Plex Mono", monospace;
+    font-weight:700;
+    font-size:1.05rem;
+    line-height:1;
+    color:var(--text);
+    cursor:pointer;
+  }
+  .zoom-btn:hover:not(:disabled){ background:var(--surface-alt); }
+  .zoom-btn:disabled{ opacity:0.4; cursor:not-allowed; }
+
+  /* --- Runde 17 (Nutzer-Rückmeldung Punkt 2): "+ Neue Zeile darunter" erzeugt
+     eine mit der bestehenden Fläche GESPIEGELTE zweite (dritte, …) Kästchen-
+     fläche, sichtbar getrennt durch einen schwarzen Balken. --- */
+  .freie-flaeche__liste{ display:flex; flex-direction:column; }
+  .freie-flaeche__eintrag{ display:flex; flex-direction:column; }
+  .freie-flaeche__trenner{ height:6px; margin:0 0.5rem; background:#1a1a1a; flex:0 0 auto; }
+  .freie-flaeche__eintrag:not(:first-child) .freie-tafel{
+    border-top-left-radius:0;
+    border-top-right-radius:0;
+    border-top:none;
+  }
+  .freie-flaeche__eintrag:not(:last-child) .freie-tafel{
+    border-bottom-left-radius:0;
+    border-bottom-right-radius:0;
+  }
+  .freie-flaeche__liste:has(.freie-flaeche__trenner) .freie-flaeche__eintrag--aktiv .freie-tafel{
+    outline:3px solid var(--accent);
+    outline-offset:-3px;
+  }
+  /* Runde 22 Punkt 6: Reihen-Container für "Zeile löschen" + "+ Neue Zeile
+     darunter" – nebeneinander statt untereinander. */
+  .freie-flaeche__zeile-aktionen{ align-self:flex-start; display:flex; gap:0.5rem; margin-top:0.6rem; }
+  .freie-flaeche__neue-zeile-btn{
+    padding:0.5rem 0.85rem;
+    border:1px solid var(--accent);
+    border-radius:8px;
+    background:var(--surface);
+    font-family:"Public Sans", sans-serif;
+    color:var(--accent);
+    font-weight:600;
+    white-space:nowrap;
+    cursor:pointer;
+  }
+  .freie-flaeche__neue-zeile-btn:hover{ background:var(--surface-alt); }
+  .freie-flaeche__zeile-loeschen-btn{
+    padding:0.5rem 0.85rem;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background:var(--surface);
+    font-family:"Public Sans", sans-serif;
+    color:var(--text-muted);
+    font-weight:600;
+    white-space:nowrap;
+    cursor:pointer;
+  }
+  .freie-flaeche__zeile-loeschen-btn:hover:not(:disabled){ background:var(--surface-alt); }
+  .freie-flaeche__zeile-loeschen-btn:disabled{ opacity:0.4; cursor:not-allowed; }
+
+  .freie-tafel{
+    position:relative;
+    min-height:320px;
+    overflow:auto;
+    background-color:var(--surface-alt);
+    background-image:
+      linear-gradient(to right, var(--tafel-grid) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--tafel-grid) 1px, transparent 1px);
+    /* Runde 24 (Punkte 9-11): die Kästchengröße wird von JS pro Instanz
+       exakt auf die aktuelle Plättchengröße (Zoomstufe) gesetzt (siehe
+       createFreieTafel/render, --zelle), damit Plättchen immer exakt auf
+       den sichtbaren Kästchen stehen. 36px = Standard-TILE_UNIT, bis JS
+       die Eigenschaft setzt. */
+    background-size:var(--zelle, 36px) var(--zelle, 36px);
+    border:1.5px dashed var(--border);
+    border-radius:10px;
+    touch-action:none;
+    user-select:none;
+    -webkit-user-select:none;
+  }
+  .freie-tafel__hinweis{
+    position:absolute;
+    inset:0;
+    margin:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--text-muted);
+    font-style:italic;
+    pointer-events:none;
+  }
+  .freie-tafel__kachel{
+    position:absolute;
+    cursor:grab;
+    touch-action:none;
+    transition:left 0.2s ease, top 0.2s ease;
+  }
+  .freie-tafel__kachel:hover, .freie-tafel__kachel:focus-visible{ filter:brightness(1.08); }
+  .freie-tafel__kachel--dragging{
+    cursor:grabbing;
+    z-index:30;
+    transition:none;
+    filter:drop-shadow(0 6px 10px rgba(0,0,0,0.35));
+  }
+  .freie-tafel__kachel--ausgewaehlt{
+    outline:3px solid var(--accent);
+    outline-offset:2px;
+    border-radius:6px;
+  }
+  /* Runde 29 (Punkt 2) markierte jedes einzelne, durch "x-Wert einsetzen"
+     entstandene Plättchen für sich mit einem gestrichelten Rahmen
+     (".freie-tafel__kachel--aus-einsetzen", seither entfernt). Runde 30
+     (Punkt 2, Nutzer-Rückmeldung: "statt gestrichelte Umrandung über
+     einzelne +1, Mache eine eine durchgängige, gruppierte Umrandung über
+     alle +/-1 die von einem x/x² stammt"): EIN durchgängiger (nicht
+     gestrichelter) Rahmen umschließt stattdessen den GESAMTEN Stapel einer
+     Einsetzen-Gruppe – als eigenes, bei jedem render() neu positioniertes
+     Element (siehe createFreieTafel/einsetzenRahmenElemente), nicht als
+     Klasse auf den Plättchen selbst. Löst sich auf, sobald die Gruppe (ganz
+     oder teilweise) weiter bearbeitet wird – siehe starteKachelDrag/onUp und
+     die Misch-Stapel-Prüfung in render(). */
+  .freie-tafel__einsetzen-rahmen{
+    position:absolute;
+    border:2px solid var(--accent);
+    border-radius:6px;
+    pointer-events:none;
+  }
+  .freie-tafel__auswahlrechteck{
+    position:absolute;
+    z-index:40;
+    border:1.5px dashed var(--accent);
+    background:rgba(58,110,165,0.12);
+    pointer-events:none;
+  }
+
+  .term-toggle-btn{
+    display:block;
+    margin-top:0.85rem;
+    padding:0.5rem 0.9rem;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background:var(--surface);
+    font-family:"Public Sans", sans-serif;
+    font-weight:600;
+    font-size:0.85rem;
+    color:var(--accent);
+    cursor:pointer;
+  }
+  .term-toggle-btn:hover{ background:var(--surface-alt); }
+
+  .term-anzeige{
+    display:flex;
+    align-items:baseline;
+    gap:0.6rem;
+    margin-top:0.6rem;
+    padding:0.6rem 0.9rem;
+    background:var(--surface-alt);
+    border:1.5px solid var(--ink-soft);
+    border-radius:8px;
+  }
+  .term-anzeige[hidden]{ display:none; }
+  .term-anzeige__label{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:0.68rem;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    color:var(--text-muted);
+  }
+  .term-anzeige__wert{
+    font-family:"IBM Plex Mono", monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:1.15rem;
+    font-weight:700;
+    color:var(--ink);
+  }
+
+  /* --- Runde 15: Malkreuz-Auswahloption in jeder freien Fläche --- */
+  .malkreuz-toggle-btn{
+    display:block;
+    margin-top:0.6rem;
+    padding:0.5rem 0.9rem;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background:var(--surface);
+    font-family:"Public Sans", sans-serif;
+    font-weight:600;
+    font-size:0.85rem;
+    color:var(--accent);
+    cursor:pointer;
+  }
+  .malkreuz-toggle-btn:hover{ background:var(--surface-alt); }
+  .malkreuz-toggle-btn[aria-expanded="true"]{
+    border-color:var(--accent);
+    background:var(--accent);
+    color:var(--accent-contrast);
+  }
+  /* Runde 17: die zusätzliche Malkreuz-Erklärung (Punkt 1) blendet ihren
+     eigenen Umschalt-Knopf per hidden erst nach "Starten" ein – ohne
+     diese Regel würde das obige display:block das hidden-Attribut
+     überschreiben (Autor-CSS schlägt die UA-Standardregel unabhängig von
+     der Spezifität). */
+  .malkreuz-toggle-btn[hidden]{ display:none; }
+  /* Runde 18 (Nutzer-Rückmeldung Punkt 5): NUR die Variante in der freien
+     Bearbeitungsfläche (jetzt unterhalb von "Fläche leeren" in der schmalen
+     Auswahl-Spalte statt unterhalb von "+ Neue Zeile darunter") wird
+     verkleinert – die "Zusätzliche Erklärung mit dem Malkreuz"-Umschalter in
+     den Erklärungen behalten ihre normale Größe. */
+  .malkreuz-toggle-btn--klein{ padding:0.3rem 0.6rem; font-size:0.78rem; margin-top:0.5rem; }
+  .malkreuz-host{
+    margin-top:0.85rem;
+    padding:0.75rem;
+    border:1.5px dashed var(--border);
+    border-radius:12px;
+    overflow:auto;
+  }
+  .malkreuz-host[hidden]{ display:none; }
+  /* Runde 22 Punkt 12: das Malkreuz erscheint seither direkt unterhalb des
+     "Malkreuz anzeigen"-Knopfes in der schmalen Auswahl-Spalte statt in der
+     breiteren Bearbeitungsspalte. Runde 23 (Nutzer-Rückmeldung: Plättchen
+     sollen mit derselben Startgröße wie in den Bearbeitungsflächen beginnen
+     und erst kleiner werden, wenn der Platz nicht mehr ausreicht): der
+     vormals hier fest codierte `zoom:0.6` ist entfallen – er verkleinerte
+     immer gleich stark und dabei auch die Bedienknöpfe unten mit. Die
+     Skalierung wird jetzt dynamisch berechnet und nur auf `.malkreuz`
+     selbst angewendet (siehe berechneLayout/renderKreuz). */
+  .malkreuz-host--schmale-spalte{ }
+
+  /* --- Runde 21 (Punkt 8/9): beliebig viele, untereinander unabhängige
+     Malkreuze innerhalb EINES .malkreuz-host (createMalkreuzGruppe) – jedes
+     trägt einen eigenen "Anwenden"-Knopf (Punkt 8) und (nur am bislang
+     letzten Eintrag) einen "+ Weiteres Malkreuz"-Knopf (Punkt 9). Runde 23:
+     alle drei (inkl. "Malkreuz löschen") sind bewusst so groß wie
+     .malkreuz-toggle-btn--klein ("Malkreuz anzeigen/verbergen"). --- */
+  .malkreuz-eintrag__trenner{ margin:1rem 0; border-top:1.5px dashed var(--border); }
+  .malkreuz-anwenden-btn{
+    display:block;
+    margin-top:0.75rem;
+    padding:0.3rem 0.6rem;
+    font-size:0.78rem;
+    border:none;
+    border-radius:8px;
+    background:var(--accent);
+    color:var(--accent-contrast);
+    font-family:"Public Sans", sans-serif;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .malkreuz-anwenden-btn:hover{ background:var(--accent-hover); }
+  .malkreuz-weiteres-btn{
+    display:block;
+    margin-top:0.5rem;
+    padding:0.3rem 0.6rem;
+    font-size:0.78rem;
+    border:1.5px dashed var(--accent);
+    border-radius:8px;
+    background:transparent;
+    color:var(--accent);
+    font-family:"Public Sans", sans-serif;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .malkreuz-weiteres-btn:hover{ background:var(--surface-alt); }
+  .malkreuz-loeschen-btn{
+    display:block;
+    margin-top:0.5rem;
+    padding:0.3rem 0.6rem;
+    font-size:0.78rem;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background:var(--surface);
+    color:var(--text-muted);
+    font-family:"Public Sans", sans-serif;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .malkreuz-loeschen-btn:hover:not(:disabled){ background:var(--surface-alt); }
+  .malkreuz-loeschen-btn:disabled{ opacity:0.4; cursor:not-allowed; }
+
+  /* --- Runde 15: Zeilenkette – verkettete, gleichwertige Bearbeitungsflächen.
+     Seit Runde 17 nur noch für "Klammern multiplizieren" verwendet (die freie
+     Kästchenfläche hat ihre eigene, gespiegelte Verkettung – siehe
+     .freie-flaeche__liste oben und erzeugeFreieFlaeche weiter unten). --- */
+  .zeilenkette{ display:flex; flex-direction:column; gap:1.75rem; }
+  .zeilenkette__zeile{ display:flex; align-items:flex-start; gap:0.75rem; }
+  .zeilenkette__gleich{
+    flex:0 0 auto;
+    padding-top:1.1rem;
+    font-size:1.6rem;
+    font-weight:700;
+    line-height:1;
+    color:var(--accent);
+  }
+  .zeilenkette__inhalt-rahmen{ flex:1 1 auto; min-width:0; overflow:hidden; }
+  .zeilenkette__zeile--kompakt .zeilenkette__inhalt{ transform:scale(0.55); transform-origin:top left; }
+  .zeilenkette__toolbar{ flex:0 0 auto; padding-top:0.75rem; }
+  .zeilenkette__neue-zeile-btn{
+    padding:0.5rem 0.85rem;
+    border:1px solid var(--accent);
+    border-radius:8px;
+    background:var(--surface);
+    font-family:"Public Sans", sans-serif;
+    color:var(--accent);
+    font-weight:600;
+    white-space:nowrap;
+    cursor:pointer;
+  }
+  .zeilenkette__neue-zeile-btn:hover{ background:var(--surface-alt); }
+  @media (max-width:640px){
+    .zeilenkette__zeile{ flex-direction:column; }
+    .zeilenkette__gleich{ padding-top:0; }
+  }
+
+  /* --- Runde 15: "Frei ab hier weiterarbeiten" bei geführten Erklär-Tafeln --- */
+  .frei-weiterarbeiten-btn{
+    display:block;
+    margin-top:0.6rem;
+    padding:0.5rem 0.9rem;
+    border:1px solid var(--accent);
+    border-radius:8px;
+    background:var(--surface);
+    font-family:"Public Sans", sans-serif;
+    font-weight:600;
+    font-size:0.85rem;
+    color:var(--accent);
+    cursor:pointer;
+  }
+  .frei-weiterarbeiten-btn:hover{ background:var(--surface-alt); }
+  .frei-weiterarbeiten-btn[hidden],
+  .frei-weiterarbeiten-host[hidden]{ display:none; }
+  .frei-weiterarbeiten-host{
+    margin-top:1.5rem;
+    padding-top:1.25rem;
+    border-top:1.5px dashed var(--border);
+  }
+
+  /* --- "Plättchen zu Term" / "Term zu Plättchen": Termeingabe + Überprüfen --- */
+  .term-check-form{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:flex-end;
+    gap:1rem;
+    margin:1rem 0;
+  }
+  .feld--term{ flex:1 1 240px; }
+  .feld--term input[type="text"]{
+    width:100%;
+    padding:0.5rem 0.7rem;
+    border:1px solid var(--border);
+    border-radius:6px;
+    background:var(--surface);
+    color:var(--text);
+    font-family:"IBM Plex Mono", monospace;
+    font-size:1rem;
+  }
+  .feld--term input[type="text"]:focus{
+    outline:none;
+    border-color:var(--focus);
+  }
+  .ueberpruefen-btn{
+    font-family:"Public Sans", sans-serif;
+    font-weight:700;
+    font-size:0.92rem;
+    padding:0.55rem 1.2rem;
+    border:none;
+    border-radius:6px;
+    background:var(--accent);
+    color:var(--accent-contrast);
+    cursor:pointer;
+  }
+  .ueberpruefen-btn:hover{ background:var(--accent-hover); }
+  .term-check-feedback{
+    min-height:1.4em;
+    margin:0 0 1rem;
+    font-family:"Public Sans", sans-serif;
+    font-weight:600;
+  }
+  .term-check-feedback--richtig{ color:#1a7a3f; }
+  .term-check-feedback--falsch{ color:#b3392c; }
+  .term-check-feedback--fehler{ color:var(--text-muted); font-style:italic; font-weight:400; }
+
+  .zufall-btn{
+    display:block;
+    margin-bottom:1rem;
+    padding:0.45rem 0.9rem;
+    border:1.5px dashed var(--accent);
+    border-radius:6px;
+    background:var(--surface);
+    font-family:"Public Sans", sans-serif;
+    font-weight:600;
+    font-size:0.85rem;
+    color:var(--accent);
+    cursor:pointer;
+  }
+  .zufall-btn:hover{ background:var(--surface-alt); }
+  .term-eingabe-zeile{
+    display:flex;
+    gap:0.5rem;
+  }
+  .term-eingabe-zeile input[type="text"]{ flex:1; }
+
+  /* --- Gleichungen: zwei freie Flächen mit Gleichheitszeichen --- */
+  .gleichung-bereich{
+    display:flex;
+    flex-direction:column;
+    gap:1.1rem;
+  }
+  /* Runde 21 (Punkt 1): ohne diese Überschreibung gewinnt das obige
+     "display:flex" gegen das Standardverhalten von [hidden] (display:none),
+     da beide dieselbe Spezifität haben – die Ein-Gleichung-Ansicht bliebe
+     beim Wurzelziehen trotz gesetztem hidden-Attribut sichtbar. */
+  .gleichung-bereich[hidden]{ display:none; }
+
+  /* --- Runde 21 (Punkt 1): Wurzelziehen am Ende der quadratischen
+     Gleichungs-Erklärung – "zwei vollständig parallele Lösungswege"
+     (x=+√… und x=−√…) NEBENEINANDER, ab 640px zweispaltig. --- */
+  .ge-wurzel-zweige{
+    display:flex;
+    flex-direction:column;
+    gap:1rem;
+    margin-top:0.5rem;
+  }
+  /* Wie bei .gleichung-bereich[hidden] oben: gleiche Spezifität wie [hidden]. */
+  .ge-wurzel-zweige[hidden]{ display:none; }
+  @media (min-width:640px){
+    .ge-wurzel-zweige{ flex-direction:row; }
+    .ge-wurzel-zweig{ flex:1 1 0; min-width:0; }
+  }
+  .ge-wurzel-zweig{
+    padding:0.75rem;
+    border:1.5px solid var(--border);
+    border-radius:12px;
+    background:var(--surface);
+  }
+  .ge-wurzel-zweig__titel{
+    margin:0 0 0.5rem;
+    font-size:0.95rem;
+    color:var(--accent);
+  }
+  .gleichung-seite{
+    padding:1rem;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+  }
+  .gleichung-istgleich{
+    align-self:center;
+    font-family:inherit;
+    font-size:1.9rem;
+    font-weight:600;
+    color:var(--ink);
+    line-height:1;
+  }
+  .term-anzeige--gleichung{ margin-top:0.25rem; }
+  .gleichung-gesamt{ font-size:1.35rem; }
+
+  /* --- "Klammern multiplizieren" & "Division/Faktorisieren" (Terme):
+     Multiplikation/Division zweier linearer Klammern nach dem
+     Flächenmodell, seit Runde 13 über die gemeinsame Andock-Geste, seit
+     Runde 14 als echtes "Malkreuz" (siehe createAndockRasterUI) statt
+     über feste Klammer-Fächer mit Buttons. --- */
+  .klammer-baustein__hinweis{
+    font-weight:400;
+    font-size:0.8rem;
+    color:var(--text-muted);
+  }
+  .klammern-layout{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:1.25rem;
+    margin:1rem 0;
+  }
+  @media (min-width:900px){
+    .klammern-layout{ grid-template-columns:180px 1fr 180px; align-items:start; }
+  }
+  .klammern-palette-spalte h3{
+    margin:0 0 0.4rem;
+    font-size:0.85rem;
+  }
+  .achsen-palette{
+    display:flex;
+    flex-wrap:wrap;
+    gap:0.4rem;
+    margin-bottom:0.75rem;
+  }
+  /* Das "Malkreuz": zwei sich schneidende Linien teilen die Fläche in vier
+     Quadranten. Runde 25 (Punkt 2, Nutzer-Rückmeldung: "Faktor A soll
+     weiterhin links stehen, Faktor B soll aber oben stehen (anstatt unten)
+     und das Malzeichen oben links"): oben links das feste Malzeichen, oben
+     rechts der liegende/nebeneinander liegende Faktor B (Spalten), unten
+     links der stehende/gestapelte Faktor A (Zeilen), unten rechts das vom
+     Nutzer zu füllende Produkt-Raster – die klassische Schulbuch-Anordnung.
+     Alles ist ein einziger position:relative-Container, dessen Kinder ihre
+     Pixel-Koordinaten von createAndockRasterUI (berechneLayout) bekommen. */
+  .malkreuz{ position:relative; }
+  .malkreuz__linie{ position:absolute; background:#1a1a1a; }
+  .malkreuz__linie--waagerecht{ left:0; height:2px; }
+  .malkreuz__linie--senkrecht{ top:0; width:2px; }
+  .malkreuz__mal{
+    position:absolute;
+    transform:translate(-50%,-50%);
+    font-size:1.6rem;
+    font-weight:700;
+    color:#1a1a1a;
+  }
+  .malkreuz__label{
+    position:absolute;
+    font-size:0.68rem;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--text-muted);
+    white-space:nowrap;
+  }
+  .malkreuz__label--unten-links{ left:0; bottom:-1.1rem; }
+  .malkreuz__label--oben-rechts{ right:0; top:-1.1rem; }
+  .malkreuz__kette{ position:absolute; inset:0; pointer-events:none; }
+  .malkreuz__kachel{ position:absolute; }
+  /* Runde 16: letztes Ketten-Plättchen lässt sich herausziehen – dafür muss
+     es (trotz pointer-events:none auf dem umgebenden .malkreuz__kette)
+     selbst wieder Zeiger-Ereignisse annehmen. */
+  .malkreuz__kachel--ziehbar{ pointer-events:auto; cursor:grab; }
+  .malkreuz__kachel--dragging{ cursor:grabbing; opacity:0.85; z-index:5; }
+  .malkreuz__ghost{
+    position:absolute;
+    border:2px dashed var(--border);
+    border-radius:4px;
+    background:rgba(0,0,0,0.02);
+  }
+  .malkreuz__hitzone{
+    position:absolute;
+    border-radius:4px;
+    transition:background-color 0.15s, outline-color 0.15s;
+    /* Reine geometrische Referenzfläche – lässt Klicks durch, sonst würde
+       sie (später im DOM, im Vordergrund) das Herausziehen verdecken. */
+    pointer-events:none;
+  }
+  .malkreuz__hitzone--fehler{
+    background:rgba(192,57,43,0.18);
+    outline:2px solid #c0392b;
+  }
+  .andock-raster__hinweis{
+    position:absolute;
+    margin:0.25rem 0;
+    color:var(--text-muted);
+    font-style:italic;
+    font-size:0.8rem;
+    max-width:10rem;
+  }
+  .andock-raster{
+    position:absolute;
+    /* Runde 26 (Punkt 3, Nutzer-Rückmeldung: "Der Hintergrund von der
+       Produktfläche des Malkreuzes soll keinen extra weißen Hintergrund
+       sein sondern genauso wie bei den Faktoren"): die Faktor-Ketten
+       (.malkreuz__kette) haben selbst KEINEN eigenen Hintergrund, sie
+       liegen nur auf dem Hintergrund von .malkreuz-host. Das Produkt-
+       Raster bekam bislang zusätzlich sein eigenes, davon abweichendes
+       `var(--surface)` (weiß) – dadurch wirkte es wie eine separate weiße
+       Box. Kein eigener Hintergrund mehr, nur noch die (unverändert
+       bleibende) gestrichelte Umrandung als Kennzeichnung der Ablagefläche.
+    */
+    background:transparent;
+    border:1px dashed var(--border);
+    border-radius:12px;
+    overflow:visible;
+  }
+  .andock-raster[hidden]{ display:none; }
+  /* Runde 31 (Nutzer-Rückmeldung: "Kannst du mich es auch direkt in das
+     Produktfeld reinlegen lassen ... Im Moment legst du es beiseite..."):
+     zeigt Produktfeld-Plättchen, die VOR jeder Achse abgelegt wurden, direkt
+     in derselben Fläche, auf der später das Produkt-Raster (.andock-raster)
+     erscheint – exakt dieselbe Positionierung/Größe (siehe renderRaster).
+     Runde 33 (Nutzer-Rückmeldung: "Ich kann dem Malkreuz Produktkärtchen
+     hinzufügen, genauso wie ich Faktorkärtchen hinzufügen kann. Sie springen
+     auf ein passendes Feld und ich muss am Ende die Passenden Faktorkärtchen
+     hinzufügen."): ersetzt Runde 30-32 vollständig – KEIN gestrichelter
+     "Warte"-Rahmen, KEIN Flex-Umbruch, KEINE exakte Pixel-Ablageposition
+     mehr. Jedes Plättchen springt beim Ablegen auf ein vorläufiges
+     Zeilen-/Spalten-Rasterfeld (siehe bestimmeVorlaeufigenIndex), dessen
+     Position durch die Ablagestelle selbst bestimmt wird, und wird hier
+     GENAU an diesem Gitterfeld gerendert (siehe
+     versucheErstbefuellung/renderRaster/berechneVorlaeufigeGitterGeometrie). */
+  .andock-raster__vormerkung{
+    position:absolute;
+    background:transparent;
+    box-sizing:border-box;
+    overflow:visible;
+  }
+  .andock-raster__vormerkung[hidden]{ display:none; }
+  .andock-raster__vormerkung-kachel{
+    position:absolute;
+  }
+  /* Runde 30 (Punkt 3): Bereich für Produktfeld-Plättchen, die trotz
+     bereits bestehender Achsen zu KEINER Zelle passen (siehe Kommentar in
+     renderRaster) – der Normalfall ganz ohne Achse läuft seit Runde 31 über
+     .andock-raster__vormerkung direkt im Produktfeld-Quadranten selbst.
+     Bewusst im normalen Textfluss UNTERHALB des Malkreuzes (statt absolut
+     innerhalb eines Quadranten positioniert) – so bleibt er auch sichtbar,
+     ohne das Produkt-Raster selbst zu überlappen. */
+  .andock-raster__ausstehend{ margin-top:0.6rem; max-width:22rem; }
+  .andock-raster__ausstehend[hidden]{ display:none; }
+  .andock-raster__ausstehend-hinweis{
+    margin:0 0 0.4rem;
+    color:var(--text-muted);
+    font-style:italic;
+    font-size:0.8rem;
+  }
+  .andock-raster__ausstehend-reihe{
+    display:flex;
+    flex-wrap:wrap;
+    gap:4px;
+  }
+  .andock-raster__ausstehend-kachel{
+    outline:2px dashed var(--accent);
+    outline-offset:1px;
+    border-radius:4px;
+  }
+  .mult-zuruecksetzen-btn{
+    padding:0.6rem 1.1rem;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background:var(--surface);
+    font-weight:600;
+    cursor:pointer;
+  }
+  .mult-zelle{ position:absolute; }
+  .mult-zelle--leer{
+    border:2px dashed var(--border);
+    border-radius:4px;
+    background:rgba(0,0,0,0.03);
+    cursor:pointer;
+  }
+  .mult-zelle--fehler{
+    border-color:#c0392b;
+    background:rgba(192,57,43,0.14);
+  }
+  .mult-status{
+    margin-top:0.75rem;
+    font-weight:600;
+    color:var(--accent);
+  }
+  .mult-palette{
+    display:flex;
+    flex-wrap:wrap;
+    gap:0.5rem;
+  }
+
+  /* --- Runde 19: "Gleichungs-Kette" (Äquivalenzumformungen) --- */
+  .gleichungs-kette-spalte{ display:flex; flex-direction:column; gap:1.25rem; }
+  .gleichungs-kette__zeilen{ display:flex; flex-direction:column; }
+  .gleichungs-kette__zeile-wrapper{ padding:1rem 0; }
+  .gleichungs-kette__zeile-wrapper:not(:first-child){
+    border-top:2px dashed var(--border);
+    margin-top:0.25rem;
+  }
+  .gleichungs-kette__umformung-label{
+    display:inline-block;
+    margin-bottom:0.6rem;
+    padding:0.3rem 0.7rem;
+    background:var(--surface-alt);
+    border:1px solid var(--accent);
+    border-radius:999px;
+    font-size:0.8rem;
+    font-weight:600;
+    color:var(--accent);
+  }
+  .gleichungs-kette__zeile-kopf h4{ margin:0; }
+  /* Runde 22 (Punkte 6+13): "Zeile löschen" + "+ Neue Zeile darunter" je
+     Zeile im Kopf-Bereich, gleiche Optik wie bei der freien Kästchenfläche. */
+  .gleichungs-kette__zeile-loeschen-btn, .gleichungs-kette__neue-zeile-btn{
+    padding:0.3rem 0.6rem;
+    border-radius:8px;
+    font-family:"Public Sans", sans-serif;
+    font-weight:600;
+    font-size:0.78rem;
+    white-space:nowrap;
+    cursor:pointer;
+  }
+  .gleichungs-kette__neue-zeile-btn{ border:1px solid var(--accent); background:var(--surface); color:var(--accent); }
+  .gleichungs-kette__neue-zeile-btn:hover{ background:var(--surface-alt); }
+  .gleichungs-kette__zeile-loeschen-btn{ border:1px solid var(--border); background:var(--surface); color:var(--text-muted); }
+  .gleichungs-kette__zeile-loeschen-btn:hover:not(:disabled){ background:var(--surface-alt); }
+  .gleichungs-kette__zeile-loeschen-btn:disabled{ opacity:0.4; cursor:not-allowed; }
+  .gleichungs-kette__seite h4{ margin:0 0 0.4rem; font-size:0.95rem; }
+  .gleichungs-kette__seite--aktiv .freie-tafel{
+    outline:3px solid var(--accent);
+    outline-offset:-3px;
+  }
+  .gleichungs-kette__umformung{
+    padding:1rem;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+  }
+  .gleichungs-kette__umformung h3{ margin:0 0 0.4rem; }
+  .gleichungs-kette__umformung-hinweis-text{
+    margin:0 0 0.75rem;
+    font-size:0.82rem;
+    color:var(--text-muted);
+  }
+  .gleichungs-kette__umformung-addieren{
+    display:flex;
+    flex-wrap:wrap;
+    gap:0.5rem;
+    margin-bottom:0.85rem;
+  }
+  .gk-addieren-btn{
+    padding:0.45rem 0.8rem;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background:var(--surface);
+    font-family:"IBM Plex Mono", monospace;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .gk-addieren-btn:hover{ background:var(--surface-alt); }
+  .gleichungs-kette__umformung-faktor{
+    display:flex;
+    align-items:center;
+    gap:0.5rem;
+    flex-wrap:wrap;
+  }
+  .gk-faktor-input{
+    width:4.5rem;
+    padding:0.35rem 0.5rem;
+    border:1px solid var(--border);
+    border-radius:6px;
+  }
+  .gk-mult-btn, .gk-div-btn, .gk-mal-minus-eins-btn{
+    padding:0.45rem 0.8rem;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background:var(--surface);
+    font-weight:600;
+    cursor:pointer;
+  }
+  .gk-mult-btn:hover, .gk-div-btn:hover, .gk-mal-minus-eins-btn:hover{ background:var(--surface-alt); }
+  .gk-umformung-hinweis{ margin:0.75rem 0 0; font-size:0.85rem; }
+  .gk-umformung-hinweis--fehler{ color:#b3392c; font-weight:600; }
+  /* Runde 30 (Punkt 1): immer sichtbarer Hinweis je Gleichungs-Zeile, sobald
+     die aktuell dargestellte (lineare) Gleichung keine ganzzahlige Lösung
+     mehr hat – siehe aktualisiereGesamt in erzeugeGleichungsKette. */
+  .gk-ganzzahl-hinweis{
+    margin:0.5rem 0 0;
+    font-size:0.85rem;
+    font-style:italic;
+    color:#8a5a00;
+  }
+  .gk-ganzzahl-hinweis[hidden]{ display:none; }
+
+  /* --- Runde 20 (Punkt 6a): Warteschlange für "Auf beide Seiten anwenden" –
+     gewählte Umformungen sammeln sich hier, bis "Jetzt anwenden" sie
+     gemeinsam zu EINER neuen Zeile zusammenfasst. --- */
+  .gk-warteschlange-bereich{
+    margin:0.85rem 0;
+    padding-top:0.75rem;
+    border-top:1px dashed var(--border);
+  }
+  .gk-warteschlange-hinweis{ margin:0 0 0.6rem; color:var(--text-muted); font-style:italic; font-size:0.85rem; }
+  .gk-warteschlange{ display:flex; flex-wrap:wrap; gap:0.4rem; margin:0 0 0.75rem; padding:0; list-style:none; }
+  .gk-warteschlange__eintrag{
+    display:flex; align-items:center; gap:0.35rem;
+    padding:0.3rem 0.3rem 0.3rem 0.65rem;
+    border:1px solid var(--accent);
+    border-radius:999px;
+    background:var(--surface);
+    color:var(--accent);
+    font-weight:700;
+    font-size:0.9rem;
+  }
+  .gk-warteschlange__entfernen-btn{
+    display:flex; align-items:center; justify-content:center;
+    width:1.3rem; height:1.3rem;
+    border:none; border-radius:50%;
+    background:transparent; color:inherit;
+    font-size:1rem; line-height:1; cursor:pointer;
+  }
+  .gk-warteschlange__entfernen-btn:hover{ background:var(--surface-alt); }
+  .gk-anwenden-btn{
+    padding:0.55rem 1rem;
+    border:none; border-radius:8px;
+    background:var(--accent);
+    color:var(--accent-contrast);
+    font-weight:700;
+    cursor:pointer;
+  }
+  .gk-anwenden-btn:hover:not(:disabled){ filter:brightness(1.08); }
+  .gk-anwenden-btn:disabled{ opacity:0.5; cursor:not-allowed; }
+
+  /* Runde 29 (Punkt 4): "Wurzel ziehen" wirkt sofort (kein Warteschlangen-
+     Eintrag), deshalb optisch leicht abgesetzt von Addieren/Malnehmen/
+     Teilen/×(−1) statt in dieselbe Reihe gestellt. */
+  .gleichungs-kette__umformung-wurzel{
+    margin:0.85rem 0 0;
+    padding-top:0.75rem;
+    border-top:1px dashed var(--border);
+  }
+  .gk-wurzel-hinweis-text{ margin:0 0 0.6rem; color:var(--text-muted); font-style:italic; font-size:0.85rem; }
+  .gk-wurzel-btn{
+    padding:0.45rem 0.8rem;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background:var(--surface);
+    font-weight:600;
+    cursor:pointer;
+  }
+  .gk-wurzel-btn:hover{ background:var(--surface-alt); }
+
+  /* --- Runde 20 (Punkt 6c): linke und rechte Seite einer Gleichungs-Kette-
+     Zeile stehen ab einer Mindestbreite NEBENEINANDER statt gestapelt.
+     Runde 37 (Punkt 3, Nutzer-Rückmeldung): beide Bearbeitungsflächen
+     sollen breiter wirken – dafür der Abstand zwischen ihnen (statt dem
+     allgemeinen .gleichung-bereich-Gap von 1.1rem) sowie das "="-Zeichen
+     selbst (siehe .gleichungs-kette__gleich unten) verkleinert, damit mehr
+     Platz an die beiden flex:1-Flächen geht. --- */
+  @media (min-width:640px){
+    .gleichungs-kette__zeile{ flex-direction:row; align-items:flex-start; gap:0.5rem; }
+    .gleichungs-kette__seite{ flex:1 1 0; min-width:0; }
+  }
+  .gleichungs-kette__gleich{ font-size:1.3rem; }
+
+  .gleichung-erklaerung-form__symbol{
+    align-self:center;
+    font-family:"IBM Plex Mono", monospace;
+    font-weight:600;
+  }
+  /* Runde 20: Startgleichung-Formular der quadratischen Ergänzung – dieselbe
+     Symbol-Optik wie beim Gleichungen-Formular oben. */
+  .qe-form__symbol{
+    align-self:center;
+    font-family:"IBM Plex Mono", monospace;
+    font-weight:600;
+  }
+  /* --- Runde 21 (Punkt 10): "Funktionen > Parabeln > Normalform zu
+     Scheitelform" – die vorgegebene Aufgabe (x² + bx + c) hervorheben. --- */
+  .parabel-aufgabe{
+    margin:0.5rem 0 1rem;
+    font-size:1.3rem;
+    font-weight:700;
+  }
+  /* --- Runde 22 (Punkt 9): "Normalform zu Scheitelform" bekommt eine eigene
+     Bearbeitungsfläche (Schritt 1) sowie ein dediziertes Scheitelpunkt-Feld
+     und eine Graph-Auswahl (Schritt 2/3). --- */
+  .scheitelform-arbeitsflaeche{ margin-bottom:1.5rem; }
+  .scheitelform-weiter-btn{
+    margin-top:0.75rem;
+    padding:0.6rem 1.1rem;
+    border:none;
+    border-radius:8px;
+    background:var(--accent);
+    color:var(--accent-contrast);
+    font-family:"Public Sans", sans-serif;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .scheitelform-weiter-btn:hover{ background:var(--accent-hover); }
+  .scheitelform-formular-bereich, .scheitelform-graph-bereich{
+    margin-bottom:1.5rem;
+    padding-top:1rem;
+    border-top:1.5px dashed var(--border);
+  }
+  .qe-form__symbol--scheitel{ margin-left:1rem; }
+  .scheitelform-graph-auswahl{ display:flex; gap:1.5rem; flex-wrap:wrap; }
+  .scheitelform-graph-option{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:0.4rem;
+    padding:0.75rem;
+    border:2px solid var(--border);
+    border-radius:10px;
+    background:var(--surface);
+    font-family:"Public Sans", sans-serif;
+    cursor:pointer;
+  }
+  .scheitelform-graph-option:not(:disabled):hover{ border-color:var(--accent); }
+  .scheitelform-graph-option:disabled{ cursor:default; }
+  .scheitelform-graph-option--richtig{ border-color:#1a7a3f; box-shadow:0 0 0 2px #1a7a3f inset; }
+  .scheitelform-graph-option--falsch{ border-color:#b3392c; box-shadow:0 0 0 2px #b3392c inset; }
+  .parabel-svg{ display:block; background:var(--surface-alt); border:1px solid var(--border); border-radius:6px; }
+  .parabel-svg__achse{ stroke:#999; stroke-width:1; }
+  .parabel-svg__kurve{ fill:none; stroke:var(--accent); stroke-width:2.5; }
+  .parabel-svg__scheitel{ fill:#b3392c; }
+
+  /* --- Runde 27 (Punkt 2): "Lineare Funktionen"/"Quadratische Funktionen" –
+     Funktions-Formular, Wertetabelle mit Schieberegler, beschriftetes
+     Koordinatensystem (gemeinsame Bausteine für beide Module). --- */
+  .funktion-bereich-abschnitt{
+    margin-bottom:1.5rem;
+    padding-top:1rem;
+    border-top:1.5px dashed var(--border);
+  }
+  .funktion-term-anzeige{
+    margin:0.75rem 0 1.25rem;
+    font-size:1.2rem;
+    font-weight:700;
+    font-family:"IBM Plex Mono", monospace;
+  }
+  /* Runde 28 (Punkt 3): statt separater, beschrifteter Felder "M"/"B" eine
+     Lückentext-Formel "y = ___x + ___", die der späteren Termanzeige
+     "y = …" optisch unmittelbar entspricht (Runde 28, Punkt 1). */
+  .funktion-term-formular{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:0.4rem;
+  }
+  .funktion-term-formular__text{
+    font-family:"IBM Plex Mono", monospace;
+    font-weight:600;
+    font-size:1.1rem;
+  }
+  .funktion-blank{
+    font-family:"IBM Plex Mono", monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:1.1rem;
+    width:3.2rem;
+    text-align:center;
+    padding:0.3rem 0.1rem;
+    border:none;
+    border-bottom:2px solid var(--border);
+    background:transparent;
+    color:var(--text);
+  }
+  .funktion-blank:focus{ outline:none; border-bottom-color:var(--focus); }
+
+  .wertetabelle{ border-collapse:collapse; margin-bottom:0.75rem; }
+  .wertetabelle th, .wertetabelle td{
+    border:1px solid var(--border);
+    padding:0.4rem 0.7rem;
+    text-align:center;
+    font-family:"IBM Plex Mono", monospace;
+  }
+  .wertetabelle th{ background:var(--surface-alt); font-weight:700; }
+  .wertetabelle-eingabe{
+    width:3.2rem;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:1rem;
+    text-align:center;
+    border:1px solid var(--border);
+    border-radius:4px;
+    background:var(--surface);
+    color:var(--text);
+  }
+  .wertetabelle-eingabe--richtig{ border-color:#1a7a3f; background:#eaf6ee; }
+  .wertetabelle-eingabe--falsch{ border-color:#b3392c; background:#fbecea; }
+
+  .koordsys-svg{ display:block; background:var(--surface-alt); border:1px solid var(--border); border-radius:6px; margin-bottom:0.75rem; }
+  .koordsys-svg__achse{ stroke:#999; stroke-width:1; }
+  .koordsys-svg__tick{ stroke:#999; stroke-width:1; }
+  .koordsys-svg__zahl{ font-size:8px; fill:var(--text-muted); font-family:"IBM Plex Mono", monospace; }
+  .koordsys-svg__achsenlabel{ font-size:9px; font-weight:700; fill:var(--text-muted); font-family:"Public Sans", sans-serif; }
+  .koordsys-svg__kurve{ fill:none; stroke:var(--accent); stroke-width:2.5; }
+  .koordsys-svg__punkt{ fill:#b3392c; }
+  .verbinden-btn{
+    padding:0.6rem 1.1rem;
+    border:none;
+    border-radius:8px;
+    background:var(--accent);
+    color:var(--accent-contrast);
+    font-family:"Public Sans", sans-serif;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .verbinden-btn:hover{ background:var(--accent-hover); }
+  .verbinden-btn:disabled{ background:var(--border); color:var(--text-muted); cursor:default; }
+
+  /* Runde 24 (Punkt 1): main#modul-content übernimmt jetzt die seitliche
+     Polsterung, die vorher von .blatt kam – Kopf/Nav bleiben dadurch volle
+     Breite (eigener weißer Balken), nur der eigentliche Modul-Inhalt ist
+     wie im alten Projektstand mittig mit Innenabstand eingerückt. */
+  main#modul-content{
+    padding:1.75rem clamp(1.25rem, 4vw, 3rem) 1rem;
+  }
+  footer.fuss{
+    margin-top:1rem;
+    padding:0 clamp(1.25rem, 4vw, 3rem) 2.5rem;
+    color:var(--text-muted);
+    font-size:0.82rem;
+    max-width:62ch;
+  }
